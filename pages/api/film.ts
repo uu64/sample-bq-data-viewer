@@ -1,12 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { BigQuery } from "@google-cloud/bigquery";
+import sql from "../../sql/film";
 
-type Data = {
-  name: string;
-};
+type Film = {
+  title: string;
+  release_year: number;
+  production_company: string;
+  director: string;
+  actor_1: string;
+  actor_2: string;
+  actor_3: string;
+  locations: string[];
+};;
 
 type SuccessResponse = {
-  data: Data[];
+  data: Film[];
 };
 
 type ErrorResponse = {
@@ -19,33 +27,23 @@ export default async function handler(
 ) {
   const bigquery = new BigQuery();
   async function query() {
-    const query = `
-      SELECT name
-      FROM \`bigquery-public-data.usa_names.usa_1910_2013\`
-      WHERE state = 'TX'
-      LIMIT 10
-    `;
     const options = {
-      query: query,
+      query: sql,
       location: "US",
+      params: {limit: 10}
     };
 
     const [job] = await bigquery.createQueryJob(options);
-    console.log(`Job ${job.id} started.`);
-
     const [rows] = await job.getQueryResults();
 
-    console.log("Rows:");
-    rows.forEach((row) => console.log(row));
     return rows
   }
   await query()
     .then(rows => {
-      console.log(rows)
       res.status(200).json({data: rows});
     })
     .catch(e => {
-      console.log(e)
+      console.error(e)
       res.status(500).json({ message: "Internal Error" });
     })
 }
