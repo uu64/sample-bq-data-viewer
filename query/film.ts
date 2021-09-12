@@ -21,6 +21,6 @@ const select: string = `
         WHERE films.title = film_locations.title AND films.release_year = film_locations.release_year
     ) AS locations
   FROM films
-`
+`;
 
-export default select
+export default select;
